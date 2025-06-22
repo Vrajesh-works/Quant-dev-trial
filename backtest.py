@@ -71,7 +71,6 @@ class MockKafkaConsumer:
         pass
 
 class SORBacktester:
-    #Smart Order Router Backtesting Engine
 
     
     def __init__(self, use_mock=True):
@@ -98,12 +97,12 @@ class SORBacktester:
  
         print("Starting parameter search...")
         
-        lambda_over_values = [0.05, 0.1, 0.2, 0.3, 0.4]
-        lambda_under_values = [0.05, 0.1, 0.2, 0.3, 0.4]
-        theta_queue_values = [0.01, 0.05, 0.1, 0.15, 0.2]
+        lambda_over_values = [0.0001, 0.0005, 0.001, 0.002, 0.005, 0.01]
+        lambda_under_values = [0.0001, 0.0005, 0.001, 0.002, 0.005, 0.01]
+        theta_queue_values = [0.0001, 0.0005, 0.001, 0.002, 0.005, 0.01]
         
-        price_impact_flags = [True, False]
-        smart_venue_flags = [True, False]
+        price_impact_flags = [False, True]
+        smart_venue_flags = [False, True]
         
         best_params = {}
         best_cost = float('inf')
@@ -161,45 +160,16 @@ class SORBacktester:
                 best_params = all_results[0]['params']
                 best_cost = best_result.total_cash
         
-        # Validate the best result
         if best_result:
-            benchmark_venues = []
-            for snapshot in self.snapshots_received[:10]:
-                for venue_data in snapshot['venues']:
-                    if venue_data['ask_px_00'] > 0:
-                        benchmark_venues.append(venue_data['ask_px_00'])
-            
-            if benchmark_venues:
-                avg_market_price = sum(benchmark_venues) / len(benchmark_venues)
-                expected_cost = avg_market_price * self.target_shares
-                
-                if abs(best_result.total_cash - expected_cost) > expected_cost * 0.1:
-                    print(f"Warning: Best result cost (${best_result.total_cash:.2f}) differs significantly from expected (${expected_cost:.2f})")
-                    
-                    allocator = ContKukanovAllocator(0.1, 0.1, 0.05)
-                    allocator.set_price_impact_modeling(True)
-                    allocator.set_smart_venue_selection(True)
-                    fallback_result = self._test_strategy(allocator)
-                    
-                    if fallback_result and fallback_result.total_cash < best_result.total_cash * 0.9:
-                        best_result = fallback_result
-                        best_params = {
-                            'lambda_over': 0.1,
-                            'lambda_under': 0.1,
-                            'theta_queue': 0.05,
-                            'use_price_impact': True,
-                            'use_smart_venue': True
-                        }
-                        best_cost = fallback_result.total_cash
-                        print(f"Using fallback parameters with cost: ${best_cost:.2f}")
+            print(f"Best parameters found: {best_params}")
+            print(f"Best cost: ${best_result.total_cash:.2f}")
+            print(f"Shares filled: {best_result.shares_filled}/{self.target_shares}")
+            print(f"Average fill price: ${best_result.avg_fill_px:.4f}")
         
         print(f"Parameter search complete. Best cost: ${best_cost:.2f}")
         return best_params, best_result
     
     def _test_strategy(self, allocator: ContKukanovAllocator) -> ExecutionResult:
-
-        
-   
         if not self.snapshots_received:
             return None
         

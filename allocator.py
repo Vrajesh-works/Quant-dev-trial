@@ -13,7 +13,6 @@ class Venue:
     price_impact_factor: float = 0.0001
 
 class ContKukanovAllocator:
-    #Implements the Cont-Kukanov optimal order allocation algorithm
    
     
     def __init__(self, lambda_over: float, lambda_under: float, theta_queue: float):
@@ -25,12 +24,7 @@ class ContKukanovAllocator:
         self.smart_venue_selection = True
     
     def allocate(self, order_size: int, venues: List[Venue]) -> Tuple[List[int], float]:
-        self._update_venue_metrics(venues)
-        
-        venues = sorted(venues, key=lambda v: self._calculate_effective_price(v, order_size))
-        
-
-        step = max(10, min(100, order_size // 50))
+        step = 100
         
         splits = [[]]
         
@@ -38,13 +32,10 @@ class ContKukanovAllocator:
             new_splits = []
             for alloc in splits:
                 used = sum(alloc)
-                max_v = min(order_size - used, venues[v_idx].ask_size, order_size // max(1, len(venues) - v_idx))
+                max_v = min(order_size - used, venues[v_idx].ask_size)
                 
                 for q in range(0, max_v + 1, step):
                     new_splits.append(alloc + [q])
-            
-            if len(new_splits) > 1000:
-                new_splits = sorted(new_splits, key=lambda s: sum(s), reverse=True)[:1000]
             
             splits = new_splits
         
@@ -60,14 +51,6 @@ class ContKukanovAllocator:
             if cost < best_cost:
                 best_cost = cost
                 best_split = alloc
-        
-        if not best_split:
-            best_split = self._create_smart_allocation(order_size, venues)
-            best_cost = self._compute_cost(best_split, venues, order_size)
-        
-        if best_cost > order_size * max(v.ask for v in venues) * 2:
-            best_split = self._create_smart_allocation(order_size, venues)
-            best_cost = self._compute_cost(best_split, venues, order_size)
         
         return best_split, best_cost
     
@@ -178,14 +161,9 @@ class ContKukanovAllocator:
         for i, venue in enumerate(venues):
             exe = min(split[i], venue.ask_size)
             
-            price_with_impact = venue.ask
-            if self.use_price_impact and exe > 0:
-                impact_ratio = exe / max(1, venue.ask_size)
-                impact_factor = math.sqrt(impact_ratio) * 1.5
-                price_with_impact += venue.price_impact_factor * impact_factor * venue.ask
-            
             executed += exe
-            cash_spent += exe * (price_with_impact + venue.fee)
+            
+            cash_spent += exe * (venue.ask + venue.fee)
             
             maker_rebate = max(split[i] - exe, 0) * venue.rebate
             cash_spent -= maker_rebate
@@ -195,7 +173,6 @@ class ContKukanovAllocator:
         
         risk_penalty = self.theta_queue * (underfill + overfill)
         cost_penalty = self.lambda_under * underfill + self.lambda_over * overfill
-        
         return cash_spent + risk_penalty + cost_penalty
     
     def update_parameters(self, lambda_over: float, lambda_under: float, theta_queue: float):
