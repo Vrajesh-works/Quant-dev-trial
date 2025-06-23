@@ -1,10 +1,9 @@
 # Smart Order Router (SOR) - Quant Developer Trial
 
-<h2>Video Walkthrough</h2>
+## Video Walkthrough
 
-<a href="https://youtu.be/IiGt3E8diEk" target="_blank">
-  <img src="https://img.youtube.com/vi/IiGt3E8diEk/0.jpg" width="400" alt="Watch the video walkthrough"/>
-</a>
+[![Watch the video](https://img.youtube.com/vi/IiGt3E8diEk/0.jpg)](https://youtu.be/IiGt3E8diEk)
+
 
 
 ## Overview
