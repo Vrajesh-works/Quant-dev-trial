@@ -1,7 +1,12 @@
 # Smart Order Router (SOR) - Quant Developer Trial
 
-## Video Walkthrough
-https://youtu.be/IiGt3E8diEk
+<h2>Video Walkthrough</h2>
+
+<a href="https://youtu.be/IiGt3E8diEk" target="_blank">
+  <img src="https://img.youtube.com/vi/IiGt3E8diEk/0.jpg" width="400" alt="Watch the video walkthrough"/>
+</a>
+
+
 ## Overview
 This project implements a Smart Order Router using the Cont & Kukanov cost model for optimal order execution across multiple trading venues. The system streams real-time market data via Kafka, applies sophisticated allocation algorithms, and benchmarks performance against standard execution strategies.
 
