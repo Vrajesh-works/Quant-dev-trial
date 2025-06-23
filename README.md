@@ -2,7 +2,7 @@
 
 ## Video Walkthrough
 
-[![Watch the video](https://img.youtube.com/vi/IiGt3E8diEk/0.jpg)](https://youtu.be/IiGt3E8diEk)
+[![Watch the video](https://youtu.be/IiGt3E8diEk)
 
 
 
